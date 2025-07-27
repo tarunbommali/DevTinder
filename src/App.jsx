@@ -1,12 +1,21 @@
+import Navbar from "./components/Navbar";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./components/Login";
+import Home from "./pages/Home";
+import Profile from "./pages/Profile";
+
 function App() {
   return (
-    <h1 className="text-3xl font-bold underline">
-      Hello world!
-      <span className="text-blue-500"> Welcome to DevTinder!</span>
-      <span className="text-red-500">
-        I am Tarun Bommali, i'am building something amazing!
-      </span>
-    </h1>
+    <div>
+      <BrowserRouter basename="/">
+        <Routes>
+          <Route path="/" element={<Home />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/profile" element={<Profile />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </div>
   );
 }
 
