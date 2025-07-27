@@ -11,14 +11,16 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
-import { toast } from "react-hot-toast";
 import { loginSuccess } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "../utils/constants";
 
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -27,109 +29,82 @@ const Login = () => {
     lastName: "",
     emailId: "",
     password: "",
+    location: "",
   });
 
-  const BASE_URL = "http://localhost:3000";
-
   const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleLogin = async () => {
-    const LOGIN_URL = `${BASE_URL}/login`;
-    const { emailId, password } = formData;
-    try {
-      const response = await axios.post(
-        LOGIN_URL,
-        { emailId, password },
-        { withCredentials: true }
-      );
-      console.log("Login successful:", response.data);
-      dispatch(loginSuccess(response.data.user));
-       navigate("/")
-      toast.success("Login successful!");
-    } catch (error) {
-      console.error(
-        "Error during login:",
-        error.response?.data || error.message
-      );
-      alert("Login failed. Please check credentials.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  const handleSignup = async () => {
-    const SIGNUP_URL = `${BASE_URL}/signup`;
-    const { firstName, lastName, emailId, password } = formData;
-    try {
-      const response = await axios.post(SIGNUP_URL, {
-        firstName,
-        lastName,
-        emailId,
-        password,
-      });
-      console.log("Signup successful:", response.data);
-      // Optionally auto-switch to login
-      setIsSignup(false);
-      alert("Signup successful! You can now login.");
-    } catch (error) {
-      console.error(
-        "Error during signup:",
-        error.response?.data || error.message
-      );
-      toast.error("Signup failed.");
-      alert("Signup failed. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+  const validateFields = () => {
+    const { emailId, password, firstName, lastName } = formData;
+    if (!emailId || !password) return "Email and password are required.";
+    if (isSignup && (!firstName || !lastName)) return "Full name is required for signup.";
+    return "";
   };
 
-  const handleSubmit = () => {
-    if (
-      !formData.emailId ||
-      !formData.password ||
-      (isSignup && (!formData.firstName || !formData.lastName))
-    ) {
-      alert("Please fill all fields");
-      return;
-    }
+  const handleSubmit = async () => {
+    setErrorMsg("");
+    const validationError = validateFields();
+    if (validationError) return setErrorMsg(validationError);
 
     setIsLoading(true);
-    if (isSignup) {
-      handleSignup();
-    } else {
-      handleLogin();
+    try {
+      if (isSignup) {
+        await signupUser();
+      } else {
+        await loginUser();
+      }
+    } catch (err) {
+       setErrorMsg(err.response?.data?.message || "Something went wrong");
+     } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleGithubLogin = () => {
-    alert("Redirecting to GitHub OAuth...");
+  const loginUser = async () => {
+    const { emailId, password } = formData;
+    const response = await axios.post(
+      `${BASE_URL}/login`,
+      { emailId, password },
+      { withCredentials: true }
+    );
+    dispatch(loginSuccess(response.data.user));
+    navigate("/");
+   };
+
+  const signupUser = async () => {
+    const { firstName, lastName, emailId, password, location } = formData;
+    await axios.post(`${BASE_URL}/signup`, {
+      firstName,
+      lastName,
+      emailId,
+      password,
+      location,
+    });
+     setIsSignup(false);
   };
 
   return (
     <div className="min-h-[85vh] md:min-h-screen bg-gray-900 flex flex-col lg:flex-row">
-      {/* Left Section */}
+      {/* Left Info Section */}
       <div className="hidden lg:flex lg:w-1/2 bg-gray-800 items-center justify-center p-12">
-        <div className="max-w-lg space-y-8">
+        <div className="max-w-lg space-y-6">
           <div className="flex items-center space-x-3">
             <div className="bg-blue-600 w-12 h-12 rounded-md flex items-center justify-center">
               <Code2 className="text-white w-6 h-6" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">DevTinder</h1>
-              <p className="text-gray-400 text-sm">
-                Networking Platform for Developers
-              </p>
+              <p className="text-gray-400 text-sm">Networking Platform for Developers</p>
             </div>
           </div>
-          <h2 className="text-4xl font-bold text-white mb-4">
-            Connect. Collaborate. Grow.
-          </h2>
+          <h2 className="text-4xl font-bold text-white">Connect. Collaborate. Grow.</h2>
           <p className="text-gray-300 text-lg">
-            DevTinder helps developers find and connect with like-minded
-            professionals based on skills, interests, and goals.
+            DevTinder helps developers connect with like-minded professionals based on skills, interests, and goals.
           </p>
-          <div className="grid grid-cols-2 gap-6 text-gray-300">
+          <div className="grid grid-cols-2 gap-4 text-gray-300">
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-blue-400" />
               <span>50K+ Developers</span>
@@ -142,164 +117,104 @@ const Login = () => {
         </div>
       </div>
 
-      {/* Right Section */}
+      {/* Auth Form Section */}
       <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-        <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <div className="lg:hidden flex items-center justify-center mb-6">
+        <div className="w-full max-w-md space-y-6">
+          <div className="lg:hidden flex items-center justify-center">
             <div className="bg-blue-600 w-10 h-10 rounded flex items-center justify-center mr-2">
               <Code2 className="text-white w-5 h-5" />
             </div>
             <h1 className="text-2xl font-bold text-white">DevTinder</h1>
           </div>
 
-          {/* Auth Card */}
           <div className="bg-gray-800 p-8 rounded-lg border border-gray-700 shadow-xl">
             <h2 className="text-2xl font-bold text-white mb-2">
               {isSignup ? "Create an Account" : "Sign In"}
             </h2>
             <p className="text-sm text-gray-400 mb-6">
-              {isSignup
-                ? "Signup to join the developer network."
-                : "Login to your account to explore connections."}
+              {isSignup ? "Signup to join the network." : "Login to explore connections."}
             </p>
 
             <div className="space-y-4">
               {isSignup && (
                 <>
-                  {/* First Name */}
-                  <div className="space-y-1">
-                    <label className="text-sm text-gray-300 font-medium">
-                      First Name
-                    </label>
-                    <input
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleChange}
-                      className="w-full bg-gray-700 text-white rounded-md px-4 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter your first name"
-                    />
-                  </div>
-
-                  {/* Last Name */}
-                  <div className="space-y-1">
-                    <label className="text-sm text-gray-300 font-medium">
-                      Last Name
-                    </label>
-                    <input
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleChange}
-                      className="w-full bg-gray-700 text-white rounded-md px-4 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="Enter your last name"
-                    />
-                  </div>
+                  <InputField name="firstName" label="First Name" value={formData.firstName} onChange={handleChange} />
+                  <InputField name="lastName" label="Last Name" value={formData.lastName} onChange={handleChange} />
                 </>
               )}
+              <InputField name="emailId" label="Email" icon={<Mail />} value={formData.emailId} onChange={handleChange} />
+              <InputField
+                name="password"
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                icon={<Lock />}
+                rightIcon={showPassword ? <EyeOff /> : <Eye />}
+                onRightIconClick={() => setShowPassword((prev) => !prev)}
+                value={formData.password}
+                onChange={handleChange}
+              />
+              {isSignup && (
+                <InputField name="location" label="Location" icon={<Globe />} value={formData.location} onChange={handleChange} />
+              )}
 
-              {/* Email */}
-              <div className="space-y-1">
-                <label className="text-sm text-gray-300 font-medium">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    name="emailId"
-                    type="email"
-                    value={formData.emailId}
-                    onChange={handleChange}
-                    placeholder="you@example.com"
-                    className="w-full bg-gray-700 text-white rounded-md pl-10 pr-4 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
+              {errorMsg && <p className="text-red-500 text-sm">{errorMsg}</p>}
 
-              {/* Password */}
-              <div className="space-y-1">
-                <label className="text-sm text-gray-300 font-medium">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <input
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="********"
-                    className="w-full bg-gray-700 text-white rounded-md pl-10 pr-10 py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
-                      <Eye className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {/* Submit Button */}
               <button
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md transition-all duration-200 disabled:opacity-50"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md disabled:opacity-50"
               >
-                {isLoading
-                  ? isSignup
-                    ? "Signing up..."
-                    : "Signing in..."
-                  : isSignup
-                  ? "Sign Up"
-                  : "Sign In"}
+                {isLoading ? (isSignup ? "Signing up..." : "Signing in...") : isSignup ? "Sign Up" : "Sign In"}
               </button>
 
-              {/* GitHub Login */}
               {!isSignup && (
                 <button
-                  onClick={handleGithubLogin}
-                  className="w-full flex items-center justify-center border border-gray-600 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-md transition-all duration-200"
+                  onClick={() => alert("Redirecting to GitHub OAuth...")}
+                  className="w-full flex items-center justify-center border border-gray-600 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-md"
                 >
-                  <Github className="w-4 h-4 mr-2" />
-                  Sign in with GitHub
+                  <Github className="w-4 h-4 mr-2" /> Sign in with GitHub
                 </button>
               )}
-            </div>
 
-            {/* Toggle Text */}
-            <p className="text-center text-gray-400 text-sm mt-6">
-              {isSignup ? (
-                <>
-                  Already have an account?{" "}
-                  <button
-                    className="text-blue-400 hover:underline"
-                    onClick={() => setIsSignup(false)}
-                  >
-                    Sign in
-                  </button>
-                </>
-              ) : (
-                <>
-                  Don’t have an account?{" "}
-                  <button
-                    className="text-blue-400 hover:underline"
-                    onClick={() => setIsSignup(true)}
-                  >
-                    Sign up free
-                  </button>
-                </>
-              )}
-            </p>
+              <p className="text-center text-gray-400 text-sm mt-6">
+                {isSignup ? (
+                  <>Already have an account? <button className="text-blue-400 hover:underline" onClick={() => setIsSignup(false)}>Sign in</button></>
+                ) : (
+                  <>Don’t have an account? <button className="text-blue-400 hover:underline" onClick={() => setIsSignup(true)}>Sign up free</button></>
+                )}
+              </p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+const InputField = ({ name, label, icon, rightIcon, onRightIconClick, value, onChange, type = "text" }) => (
+  <div className="space-y-1">
+    <label className="text-sm text-gray-300 font-medium">{label}</label>
+    <div className="relative">
+      {icon && <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">{icon}</span>}
+      <input
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={label}
+        className={`w-full bg-gray-700 text-white rounded-md ${icon ? 'pl-10' : 'pl-4'} ${rightIcon ? 'pr-10' : 'pr-4'} py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+      />
+      {rightIcon && (
+        <button
+          type="button"
+          onClick={onRightIconClick}
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+        >
+          {rightIcon}
+        </button>
+      )}
+    </div>
+  </div>
+);
 
 export default Login;

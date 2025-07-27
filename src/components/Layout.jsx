@@ -1,9 +1,49 @@
-import React from "react";
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useEffect } from "react";
+import { Outlet, useNavigate} from "react-router-dom";
+import { useDispatch } from "react-redux";
+import axios from "axios";
+import { useSelector } from "react-redux"; 
+
+
 import Navbar from "./Navbar";
-import { Outlet } from "react-router-dom";
 import Footer from "./Footer";
+import { BASE_URL } from "../utils/constants";
+import { loginSuccess, logout } from "../utils/userSlice";
 
 const Layout = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const UserData = useSelector((state) => state.user.user);
+
+  const fetchUserData = async () => {
+    if (UserData) {
+      return;
+    }
+    try {
+      const { data } = await axios.get(`${BASE_URL}/profile/view`, {
+        withCredentials: true,
+      });
+
+      if (data.user) {
+        dispatch(loginSuccess(data.user));
+      } else {
+        console.warn("User not authenticated");
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        dispatch(logout());
+        navigate("/login");
+      } else {
+        console.error("Error fetching user data:", error.message);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
