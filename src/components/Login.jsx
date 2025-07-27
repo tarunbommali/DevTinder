@@ -10,12 +10,17 @@ import {
   Globe,
 } from "lucide-react";
 import axios from "axios";
-import { toast } from 'react-hot-toast';
+import { useDispatch } from "react-redux";
+import { toast } from "react-hot-toast";
+import { loginSuccess } from "../utils/userSlice";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -34,10 +39,15 @@ const Login = () => {
     const LOGIN_URL = `${BASE_URL}/login`;
     const { emailId, password } = formData;
     try {
-      const response = await axios.post(LOGIN_URL, { emailId, password },{withCredentials: true });
+      const response = await axios.post(
+        LOGIN_URL,
+        { emailId, password },
+        { withCredentials: true }
+      );
       console.log("Login successful:", response.data);
+      dispatch(loginSuccess(response.data.user));
+       navigate("/")
       toast.success("Login successful!");
-
     } catch (error) {
       console.error(
         "Error during login:",
