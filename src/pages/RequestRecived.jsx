@@ -1,9 +1,13 @@
+/* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
+import { addRequests } from "../utils/requestSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const RequestReceived = () => {
-  const [requests, setRequests] = useState([]); // Make sure it's an array
+  const dispatch = useDispatch();
+  const requests = useSelector((store) => store.requests || []);
   const [loading, setLoading] = useState(false);
   const [actionMessage, setActionMessage] = useState("");
 
@@ -16,15 +20,13 @@ const RequestReceived = () => {
         withCredentials: true,
       });
 
-      // Log the response to confirm structure
-      console.log("Received Requests:", response.data);
-
-    
-    const requestsArray = Array.isArray(response.data.data) ? response.data.data : [];
-    setRequests(requestsArray);
+      const requestsArray = Array.isArray(response.data.data)
+        ? response.data.data
+        : [];
+      dispatch(addRequests(requestsArray));
     } catch (error) {
       console.error("Error fetching received requests:", error.message);
-      setRequests([]); // fallback to empty array to avoid crash
+      dispatch(addRequests([]));
     } finally {
       setLoading(false);
     }
@@ -35,24 +37,30 @@ const RequestReceived = () => {
       const REVIEW_ENDPOINT = `${BASE_URL}/request/review/accepted/${requestId}`;
       const response = await axios.post(REVIEW_ENDPOINT, {}, { withCredentials: true });
       setActionMessage(response.data.message);
-      fetchRequests(); // refresh
+      fetchRequests();
     } catch (error) {
       console.error("Error accepting request:", error.message);
+      setActionMessage("Failed to accept request.");
     }
   };
-const handleReject = async (requestId) => {
+
+  const handleReject = async (requestId) => {
     try {
       const REVIEW_ENDPOINT = `${BASE_URL}/request/review/rejected/${requestId}`;
       const response = await axios.post(REVIEW_ENDPOINT, {}, { withCredentials: true });
       setActionMessage(response.data.message);
-      fetchRequests(); // refresh
+      fetchRequests();
     } catch (error) {
-      console.error("Error accepting request:", error.message);
+      console.error("Error rejecting request:", error.message);
+      setActionMessage("Failed to reject request.");
     }
   };
 
   useEffect(() => {
-    fetchRequests();
+    // ✅ Avoid fetching if already present
+    if (!requests || requests.length === 0) {
+      fetchRequests();
+    }
   }, []);
 
   return (
@@ -70,25 +78,37 @@ const handleReject = async (requestId) => {
               key={req._id}
               className="bg-white shadow p-4 rounded flex justify-between items-center"
             >
-              <div>
-                <p className="font-semibold">
-                  {req.fromUserId?.firstName || "Unknown"}{" "}
-                  {req.fromUserId?.lastName || ""}
-                </p>
-                <p className="text-sm text-gray-500">Status: {req.status}</p>
+              <div className="flex items-center gap-4">
+                <img
+                  src={req.fromUserId?.profilePicture || "/default-avatar.png"}
+                  alt="profile"
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+                <div>
+                  <p className="font-semibold">
+                    {req.fromUserId?.firstName || "Unknown"}{" "}
+                    {req.fromUserId?.lastName || ""}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Status: {req.status}
+                  </p>
+                </div>
               </div>
-              <button
-                onClick={() => handleAccept(req._id)}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-              >
-                Accept
-              </button>
+
+              <div className="flex gap-2">
                 <button
-                onClick={() => handleReject(req._id)}
-                className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-              >
-                Reject
-              </button>
+                  onClick={() => handleAccept(req._id)}
+                  className="bg-green-600 text-white px-4 py-1.5 rounded hover:bg-green-700"
+                >
+                  Accept
+                </button>
+                <button
+                  onClick={() => handleReject(req._id)}
+                  className="bg-red-600 text-white px-4 py-1.5 rounded hover:bg-red-700"
+                >
+                  Reject
+                </button>
+              </div>
             </li>
           ))}
         </ul>

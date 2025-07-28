@@ -1,16 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { BASE_URL } from '../utils/constants';
+import React, { useEffect, useState, useRef } from "react";
+import axios from "axios";
+import { BASE_URL } from "../utils/constants";
+import { useDispatch, useSelector } from "react-redux";
+import { addConnections } from "../utils/connectionSlice";
 
 const Connections = () => {
-  const [connections, setConnections] = useState([]);
+  const dispatch = useDispatch();
+
+  const connections = useSelector((state) => state.connection || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const isFetched = useRef(false); // flag
+
   const [actionMessage, setActionMessage] = useState("");
 
   const CONNECTION_ENDPOINT = `${BASE_URL}/user/connections`;
 
-  // Fetch all connections
   const fetchConnections = async () => {
     try {
       setLoading(true);
@@ -19,41 +24,50 @@ const Connections = () => {
       });
 
       const users = response.data.data;
-      setConnections(Array.isArray(users) ? users : []);
+      if (Array.isArray(users)) {
+        dispatch(addConnections(users));
+      } else {
+        dispatch(addConnections([]));
+      }
     } catch (err) {
       setError("Failed to fetch connections.");
-      console.error(err.message);
+      console.error("Fetch error:", err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle remove connection
   const handleRemove = async (userId) => {
-    const confirm = window.confirm("Are you sure you want to remove this connection?");
+    const confirm = window.confirm(
+      "Are you sure you want to remove this connection?"
+    );
     if (!confirm) return;
 
     try {
-      const response = await axios.delete(`${BASE_URL}/user/connection/remove/${userId}`, {
-        withCredentials: true,
-      });
+      const response = await axios.delete(
+        `${BASE_URL}/user/connection/remove/${userId}`,
+        {
+          withCredentials: true,
+        }
+      );
       setActionMessage(response.data.message || "Connection removed.");
-      fetchConnections(); // Refresh list
+      fetchConnections(); // refresh the list
     } catch (err) {
       console.error("Error removing connection:", err.message);
       setActionMessage("Failed to remove connection.");
     }
   };
 
-  // Handle message action
   const handleMessage = (userId) => {
     console.log("Message to user:", userId);
-    // Optional: Redirect to chat route
-    // navigate(`/chat/${userId}`);
+    // navigate(`/chat/${userId}`); // optional routing
   };
 
   useEffect(() => {
-    fetchConnections();
+    if (!isFetched.current && (!connections || connections.length === 0)) {
+      fetchConnections();
+      isFetched.current = true;
+    }
   }, []);
 
   return (
