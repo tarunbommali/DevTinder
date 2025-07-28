@@ -1,5 +1,5 @@
 import React from "react";
-import { Star, Building, MapPin, MessageCircle, Edit3 } from "lucide-react";
+import { Star, Building, MapPin, Linkedin, Edit3 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const UserCard = ({
@@ -109,7 +109,7 @@ const UserCard = ({
               </span>
 
               {!isOwnProfile && (
-                <MessageCircle className="w-5 h-5 text-purple-600" />
+                <Linkedin className="w-5 h-5 text-[#0a66c2]" />
               )}
             </div>
           </div>

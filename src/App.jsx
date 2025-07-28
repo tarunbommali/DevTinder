@@ -8,6 +8,7 @@ import appStore from "./utils/appStore";
 import Feed from "./pages/Feed";
 import Connections from "./pages/Connections";
 import ProfileEdit from "./pages/ProfileEdit";
+import RequestRecived from "./pages/RequestRecived";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/edit" element={<ProfileEdit />} />
             <Route path="/connections" element={<Connections/>} />
+            <Route path="/requests" element={<RequestRecived />} />
           </Route>
         </Routes>
       </BrowserRouter>

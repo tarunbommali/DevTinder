@@ -4,6 +4,7 @@ import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { addFeed } from "../utils/feedSlice";
 import UserCard from "../components/UserCard";
+ 
 import {
   Star,
   Building,
@@ -107,8 +108,8 @@ const Feed = () => {
         >
           <Heart className="w-7 h-7 text-white" />
         </button>
-        <button className="w-12 h-12 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center shadow-lg transform active:scale-95 transition-all">
-          <Settings className="w-5 h-5 text-white" />
+        <button className="w-16 h-16 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center shadow-lg transform active:scale-95 transition-all">
+          <MessageCircle className="w-7 h-7 text-white" />
         </button>
       </div>
 

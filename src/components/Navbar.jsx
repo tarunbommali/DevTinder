@@ -21,6 +21,11 @@ const MENU_OPTIONS = [
     path: "/connections",
     icon: <Users className="w-4 h-4 mr-2" />,
   },
+  {
+    label: "Requests",
+    path: "/requests",
+    icon: <Users className="w-4 h-4 mr-2" />,
+  },
 ];
 
 const Navbar = () => {

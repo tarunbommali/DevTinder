@@ -1,10 +1,10 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { User } from "lucide-react";
+import { User  } from "lucide-react";
 import { selectUser } from "../utils/userSelectors";
 import UserCard from "../components/UserCard";
 import withProfileActions from '../hocs/withProfileActions';
-
+ 
 const UserCardWithActions = withProfileActions(UserCard);
 
 const Profile = () => {
