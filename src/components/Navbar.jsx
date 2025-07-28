@@ -104,9 +104,6 @@ const Navbar = () => {
                   Hi, {user.user.firstName}!
                 </p>
                 <p className="text-sm text-gray-500">{user.user.emailId}</p>
-                <button className="btn btn-outline btn-sm mt-2">
-                  Manage your Account
-                </button>
               </div>
 
               <div className="divider my-3" />
@@ -118,7 +115,7 @@ const Navbar = () => {
                     <Link
                       to={option.path}
                       onClick={closeDropdown}
-                      className="flex items-center px-4 py-2 rounded-lg transition-all duration-200 hover:bg-gray-100 text-sm font-medium"
+                      className="flex items-center px-4 py-2 rounded-lg transition-all duration-200 hover:bg-[#66667d] text-sm font-medium"
                     >
                       {option.icon}
                       {option.label}
