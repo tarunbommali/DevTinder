@@ -1,127 +1,120 @@
-import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addConnections } from "../utils/connectionSlice";
+import { Link } from "react-router-dom";
 
 const Connections = () => {
   const dispatch = useDispatch();
-
-  const connections = useSelector((state) => state.connection || []);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const isFetched = useRef(false); // flag
-
-  const [actionMessage, setActionMessage] = useState("");
-
-  const CONNECTION_ENDPOINT = `${BASE_URL}/user/connections`;
+  const connections = useSelector((store) => store.connections);
 
   const fetchConnections = async () => {
     try {
-      setLoading(true);
-      const response = await axios.get(CONNECTION_ENDPOINT, {
+      const res = await axios.get(BASE_URL + "/user/connections", {
         withCredentials: true,
       });
-
-      const users = response.data.data;
-      if (Array.isArray(users)) {
-        dispatch(addConnections(users));
-      } else {
-        dispatch(addConnections([]));
+      if (res.data?.data) {
+        dispatch(addConnections(res.data.data));
       }
     } catch (err) {
-      setError("Failed to fetch connections.");
-      console.error("Fetch error:", err.message);
-    } finally {
-      setLoading(false);
+      console.error("Error fetching connections:", err.message);
     }
-  };
-
-  const handleRemove = async (userId) => {
-    const confirm = window.confirm(
-      "Are you sure you want to remove this connection?"
-    );
-    if (!confirm) return;
-
-    try {
-      const response = await axios.delete(
-        `${BASE_URL}/user/connection/remove/${userId}`,
-        {
-          withCredentials: true,
-        }
-      );
-      setActionMessage(response.data.message || "Connection removed.");
-      fetchConnections(); // refresh the list
-    } catch (err) {
-      console.error("Error removing connection:", err.message);
-      setActionMessage("Failed to remove connection.");
-    }
-  };
-
-  const handleMessage = (userId) => {
-    console.log("Message to user:", userId);
-    // navigate(`/chat/${userId}`); // optional routing
   };
 
   useEffect(() => {
-    if (!isFetched.current && (!connections || connections.length === 0)) {
-      fetchConnections();
-      isFetched.current = true;
-    }
+    fetchConnections();
   }, []);
 
-  return (
-    <div className="p-6 max-w-3xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Your Connections</h2>
+  if (!connections || connections.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-900 to-purple-900 px-4">
+        <div className="text-center space-y-4">
+          <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+            <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+          <h2 className="text-white text-2xl sm:text-3xl font-bold">No Connections Yet</h2>
+          <p className="text-gray-300">Start connecting with developers to grow your network.</p>
+        </div>
+      </div>
+    );
+  }
 
-      {loading ? (
-        <p className="text-gray-500">Loading...</p>
-      ) : error ? (
-        <p className="text-red-500">{error}</p>
-      ) : connections.length === 0 ? (
-        <p className="text-gray-600">You have no connections yet.</p>
-      ) : (
-        <ul className="space-y-4">
-          {connections.map((user) => (
-            <li
-              key={user._id}
-              className="bg-white shadow rounded flex items-center justify-between p-4"
-            >
-              <div className="flex items-center gap-4">
-                <img
-                  src={user.profilePicture}
-                  alt={`${user.firstName} ${user.lastName}`}
-                  className="w-12 h-12 rounded-full object-cover"
-                />
-                <div>
-                  <p className="font-semibold text-lg text-[#15191e]">
-                    {user.firstName} {user.lastName}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-indigo-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent mb-2">
+            Your Connections
+          </h1>
+          <p className="text-gray-300 text-lg">
+            {connections.length} active {connections.length === 1 ? "connection" : "connections"}
+          </p>
+        </div>
+
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {connections.map((connection) => {
+            const { _id, firstName, lastName, profilePicture, age, gender, about } = connection;
+            console.log(connection)
+            return (
+              <div
+                key={_id}
+                className="relative group bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl p-6 transition-transform duration-300 hover:scale-[1.03] hover:shadow-lg hover:border-purple-400/50"
+              >
+                {/* Image */}
+                <div className="flex justify-center">
+                  <div className="relative w-24 h-24">
+                    <img
+                      src={profilePicture}
+                      alt={`${firstName} ${lastName}`}
+                      className="rounded-full w-full h-full object-cover border-4 border-white/20 group-hover:border-purple-400 transition-all"
+                      onError={(e) => {
+                        e.target.src = `https://ui-avatars.com/api/?name=${firstName}+${lastName}&background=7e22ce&color=fff`;
+                      }}
+                    />
+                    <span className="absolute bottom-1 right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></span>
+                  </div>
+                </div>
+
+                {/* Name + Info */}
+                <div className="mt-4 text-center">
+                  <h3 className="text-xl font-semibold text-white group-hover:text-purple-300 transition-colors">
+                    {firstName} {lastName}
+                  </h3>
+                  {age && gender && (
+                    <div className="mt-1 flex justify-center gap-2 text-sm text-purple-200">
+                      <span>{age} yrs</span>
+                      <span className="capitalize">{gender}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* About */}
+                {about && (
+                  <p className="mt-3 text-sm text-gray-300 text-center line-clamp-3">
+                    {about}
                   </p>
+                )}
+
+                {/* Chat Button */}
+                <div className="mt-6">
+                  <Link to={`/chat/${_id}`} className="block">
+                    <button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold py-2.5 rounded-xl transition-transform transform hover:scale-105">
+                      Start Chat
+                    </button>
+                  </Link>
                 </div>
               </div>
+            );
+          })}
+        </div>
 
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleMessage(user._id)}
-                  className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700"
-                >
-                  Message
-                </button>
-                <button
-                  onClick={() => handleRemove(user._id)}
-                  className="bg-red-600 text-white px-3 py-1.5 rounded hover:bg-red-700"
-                >
-                  Remove
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {actionMessage && (
-        <div className="mt-4 text-green-600 font-semibold">{actionMessage}</div>
-      )}
+        <div className="text-center mt-12">
+          <p className="text-gray-400 text-sm">Keep building meaningful connections 🤝</p>
+        </div>
+      </div>
     </div>
   );
 };

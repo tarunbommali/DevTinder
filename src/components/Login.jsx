@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
-import { loginSuccess } from "../utils/userSlice";
+import { addUser } from "../utils/userSlice";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../utils/constants";
 
@@ -40,7 +40,8 @@ const Login = () => {
   const validateFields = () => {
     const { emailId, password, firstName, lastName } = formData;
     if (!emailId || !password) return "Email and password are required.";
-    if (isSignup && (!firstName || !lastName)) return "Full name is required for signup.";
+    if (isSignup && (!firstName || !lastName))
+      return "Full name is required for signup.";
     return "";
   };
 
@@ -52,38 +53,45 @@ const Login = () => {
     setIsLoading(true);
     try {
       if (isSignup) {
-        await signupUser();
+        await handleSignUp();
       } else {
-        await loginUser();
+        await handleLogin();
       }
     } catch (err) {
-       setErrorMsg(err.response?.data?.message || "Something went wrong");
-     } finally {
+      setErrorMsg(err?.response?.data?.message || "Something went wrong");
+    } finally {
       setIsLoading(false);
     }
   };
 
-  const loginUser = async () => {
+  const handleLogin = async () => {
     const { emailId, password } = formData;
-    const response = await axios.post(
-      `${BASE_URL}/login`,
-      { emailId, password },
-      { withCredentials: true }
-    );
-    dispatch(loginSuccess(response.data.user));
-    navigate("/");
-   };
+    try {
+      const res = await axios.post(
+        BASE_URL + "/login",
+        { emailId, password },
+        { withCredentials: true }
+      );
+      dispatch(addUser(res.data));
+      navigate("/");
+    } catch (err) {
+      setErrorMsg(err?.response?.data?.message || "Login failed");
+    }
+  };
 
-  const signupUser = async () => {
+  const handleSignUp = async () => {
     const { firstName, lastName, emailId, password, location } = formData;
-    await axios.post(`${BASE_URL}/signup`, {
-      firstName,
-      lastName,
-      emailId,
-      password,
-      location,
-    });
-     setIsSignup(false);
+    try {
+      const res = await axios.post(
+        BASE_URL + "/signup",
+        { firstName, lastName, emailId, password, location },
+        { withCredentials: true }
+      );
+      dispatch(addUser(res.data.data));
+      navigate("/profile");
+    } catch (err) {
+      setErrorMsg(err?.response?.data?.message || "Signup failed");
+    }
   };
 
   return (
@@ -97,12 +105,17 @@ const Login = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">DevTinder</h1>
-              <p className="text-gray-400 text-sm">Networking Platform for Developers</p>
+              <p className="text-gray-400 text-sm">
+                Networking Platform for Developers
+              </p>
             </div>
           </div>
-          <h2 className="text-4xl font-bold text-white">Connect. Collaborate. Grow.</h2>
+          <h2 className="text-4xl font-bold text-white">
+            Connect. Collaborate. Grow.
+          </h2>
           <p className="text-gray-300 text-lg">
-            DevTinder helps developers connect with like-minded professionals based on skills, interests, and goals.
+            DevTinder helps developers connect with like-minded professionals
+            based on skills, interests, and goals.
           </p>
           <div className="grid grid-cols-2 gap-4 text-gray-300">
             <div className="flex items-center gap-2">
@@ -132,17 +145,35 @@ const Login = () => {
               {isSignup ? "Create an Account" : "Sign In"}
             </h2>
             <p className="text-sm text-gray-400 mb-6">
-              {isSignup ? "Signup to join the network." : "Login to explore connections."}
+              {isSignup
+                ? "Signup to join the network."
+                : "Login to explore connections."}
             </p>
 
             <div className="space-y-4">
               {isSignup && (
                 <>
-                  <InputField name="firstName" label="First Name" value={formData.firstName} onChange={handleChange} />
-                  <InputField name="lastName" label="Last Name" value={formData.lastName} onChange={handleChange} />
+                  <InputField
+                    name="firstName"
+                    label="First Name"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                  />
+                  <InputField
+                    name="lastName"
+                    label="Last Name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                  />
                 </>
               )}
-              <InputField name="emailId" label="Email" icon={<Mail />} value={formData.emailId} onChange={handleChange} />
+              <InputField
+                name="emailId"
+                label="Email"
+                icon={<Mail />}
+                value={formData.emailId}
+                onChange={handleChange}
+              />
               <InputField
                 name="password"
                 label="Password"
@@ -154,7 +185,13 @@ const Login = () => {
                 onChange={handleChange}
               />
               {isSignup && (
-                <InputField name="location" label="Location" icon={<Globe />} value={formData.location} onChange={handleChange} />
+                <InputField
+                  name="location"
+                  label="Location"
+                  icon={<Globe />}
+                  value={formData.location}
+                  onChange={handleChange}
+                />
               )}
 
               {errorMsg && <p className="text-red-500 text-sm">{errorMsg}</p>}
@@ -164,7 +201,13 @@ const Login = () => {
                 disabled={isLoading}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md disabled:opacity-50"
               >
-                {isLoading ? (isSignup ? "Signing up..." : "Signing in...") : isSignup ? "Sign Up" : "Sign In"}
+                {isLoading
+                  ? isSignup
+                    ? "Signing up..."
+                    : "Signing in..."
+                  : isSignup
+                  ? "Sign Up"
+                  : "Sign In"}
               </button>
 
               {!isSignup && (
@@ -178,9 +221,25 @@ const Login = () => {
 
               <p className="text-center text-gray-400 text-sm mt-6">
                 {isSignup ? (
-                  <>Already have an account? <button className="text-blue-400 hover:underline" onClick={() => setIsSignup(false)}>Sign in</button></>
+                  <>
+                    Already have an account?{" "}
+                    <button
+                      className="text-blue-400 hover:underline"
+                      onClick={() => setIsSignup(false)}
+                    >
+                      Sign in
+                    </button>
+                  </>
                 ) : (
-                  <>Don’t have an account? <button className="text-blue-400 hover:underline" onClick={() => setIsSignup(true)}>Sign up free</button></>
+                  <>
+                    Don’t have an account?{" "}
+                    <button
+                      className="text-blue-400 hover:underline"
+                      onClick={() => setIsSignup(true)}
+                    >
+                      Sign up free
+                    </button>
+                  </>
                 )}
               </p>
             </div>
@@ -191,18 +250,33 @@ const Login = () => {
   );
 };
 
-const InputField = ({ name, label, icon, rightIcon, onRightIconClick, value, onChange, type = "text" }) => (
+const InputField = ({
+  name,
+  label,
+  icon,
+  rightIcon,
+  onRightIconClick,
+  value,
+  onChange,
+  type = "text",
+}) => (
   <div className="space-y-1">
     <label className="text-sm text-gray-300 font-medium">{label}</label>
     <div className="relative">
-      {icon && <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">{icon}</span>}
+      {icon && (
+        <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+          {icon}
+        </span>
+      )}
       <input
         name={name}
         type={type}
         value={value}
         onChange={onChange}
         placeholder={label}
-        className={`w-full bg-gray-700 text-white rounded-md ${icon ? 'pl-10' : 'pl-4'} ${rightIcon ? 'pr-10' : 'pr-4'} py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500`}
+        className={`w-full bg-gray-700 text-white rounded-md ${
+          icon ? "pl-10" : "pl-4"
+        } ${rightIcon ? "pr-10" : "pr-4"} py-2 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500`}
       />
       {rightIcon && (
         <button

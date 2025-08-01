@@ -8,7 +8,7 @@ import { LogOut, User, Users } from "lucide-react"; // optional icons
 import axios from "axios";
 import { BASE_URL } from "../utils/constants";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../utils/userSlice";
+import { removeUser } from "../utils/userSlice";
 
 const MENU_OPTIONS = [
   {
@@ -54,12 +54,14 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${BASE_URL}/logout`, {}, { withCredentials: true });
+      await axios.post(BASE_URL + "/logout", {}, { withCredentials: true });
       closeDropdown();
-      dispatch(logout());
-      navigate("/login");
-    } catch (error) {
-      console.error("Logout failed:", error.message);
+
+      dispatch(removeUser());
+      return navigate("/login");
+    } catch (err) {
+      // Error logic maybe redirect to error page
+      console.log(err);
     }
   };
 
@@ -72,7 +74,7 @@ const Navbar = () => {
         </Link>
       </div>
 
-      {user.isAuthenticated && (
+      {user && (
         <div className="relative" ref={dropdownRef}>
           <button
             className="btn btn-ghost btn-circle avatar"

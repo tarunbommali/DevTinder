@@ -6,7 +6,7 @@ import Input from "../components/ui/TextInput";
 import TextArea from "../components/ui/TextArea";
 import { BASE_URL } from "../utils/constants";
 import axios from "axios";
-import { loginSuccess } from "../utils/userSlice";
+import { addUser } from "../utils/userSlice";
 
 const tabs = [
   { id: "personal", label: "Personal Info" },
@@ -57,12 +57,11 @@ const ProfileEdit = () => {
     });
 
     try {
-      await axios.patch(`${BASE_URL}/profile/edit`, filteredData, {
+      const res = await axios.patch(`${BASE_URL}/profile/edit`, filteredData, {
         withCredentials: true,
       });
 
-      dispatch(loginSuccess({ ...user, ...filteredData })); // update redux too
-      navigate("/profile");
+      dispatch(addUser(res?.data?.data));
     } catch (error) {
       console.error("Error updating profile:", error.message);
     } finally {
