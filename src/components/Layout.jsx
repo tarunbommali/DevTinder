@@ -16,11 +16,12 @@ const Layout = () => {
   const UserData = useSelector((state) => state.user.user);
 
   const fetchUserData = async () => {
+    console.log("FETCHING................")
     try {
       const { data } = await axios.get(`${BASE_URL}/profile/view`, {
         withCredentials: true,
       });
-
+      console.log("feed:"+ data)
       if (data?.user) {
         dispatch(loginSuccess(data.user));
       }
