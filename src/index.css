@@ -1,2 +1,178 @@
 @import "tailwindcss";
-@plugin "daisyui";
+
+@layer base {
+  html, body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #0B0A0A;
+    color: #F5EFE6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  .font-serif, h1, h2, h3, .font-display {
+    font-family: 'Outfit', serif;
+  }
+}
+
+/* ─── Light Mode Theme Overrides ────────────────────────────── */
+
+[data-theme="light"] {
+  background-color: #F5F3EF !important;
+  color: #171415 !important;
+}
+
+[data-theme="light"] body {
+  background-color: #F5F3EF !important;
+  color: #171415 !important;
+}
+
+[data-theme="light"] .bg-\[\#0B0A0A\] {
+  background-color: #F5F3EF !important;
+}
+
+[data-theme="light"] .bg-\[\#0B0A0A\]\/95 {
+  background-color: rgba(245, 243, 239, 0.95) !important;
+}
+
+[data-theme="light"] .bg-\[\#121011\] {
+  background-color: #FFFFFF !important;
+}
+
+[data-theme="light"] .bg-\[\#171415\] {
+  background-color: #F0ECE4 !important;
+}
+
+[data-theme="light"] .bg-\[\#1C1917\] {
+  background-color: #F7F5F0 !important;
+}
+
+[data-theme="light"] .border-\[\#2E2A27\] {
+  border-color: #E2DDD5 !important;
+}
+
+[data-theme="light"] .text-\[\#F5EFE6\] {
+  color: #171415 !important;
+}
+
+[data-theme="light"] .text-\[\#A79C8E\] {
+  color: #6B6359 !important;
+}
+
+[data-theme="light"] .text-\[\#D8CFC2\] {
+  color: #38322B !important;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+/* Theme-based dynamic input, select, textarea & option styles */
+input,
+select,
+textarea {
+  color: #F5EFE6;
+  background-color: #1C1917;
+}
+
+select option {
+  color: #F5EFE6;
+  background-color: #1C1917;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #A79C8E;
+  opacity: 0.8;
+}
+
+[data-theme="light"] input,
+[data-theme="light"] select,
+[data-theme="light"] textarea {
+  color: #171415 !important;
+  background-color: #F7F5F0 !important;
+}
+
+[data-theme="light"] select option {
+  color: #171415 !important;
+  background-color: #F7F5F0 !important;
+}
+
+[data-theme="light"] input::placeholder,
+[data-theme="light"] textarea::placeholder {
+  color: #6B6359 !important;
+  opacity: 0.8 !important;
+}
+
+/* ─── Custom Theme Scrollbar ─── */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #2E2A27 transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #2E2A27;
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #C9A227;
+}
+
+[data-theme="light"] .custom-scrollbar {
+  scrollbar-color: #D8CFC2 transparent;
+}
+
+[data-theme="light"] .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #D8CFC2;
+}
+
+
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.25s ease-out;
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-origin: top right;
+}

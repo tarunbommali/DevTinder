@@ -3,6 +3,8 @@ import userReducer from './userSlice';
 import feedReducer from './feedSlice'; 
 import requestReducer from './requestSlice';
 import connectionReducer from './connectionSlice';
+import themeReducer from './themeSlice';
+import languageReducer from './languageSlice';
 
 const appStore = configureStore({
     reducer : {
@@ -10,6 +12,8 @@ const appStore = configureStore({
         feed: feedReducer,
         requests: requestReducer,
         connections: connectionReducer,
+        theme: themeReducer,
+        language: languageReducer,
     }
 })
 

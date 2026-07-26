@@ -1,14 +1,22 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { PiLinktreeLogo } from "react-icons/pi";
 
 const Footer = () => {
+  const location = useLocation();
+
+  // Render footer ONLY on the /login route
+  if (location.pathname !== "/login") {
+    return null;
+  }
   return (
-    <footer className="footer  flex items-center justify-between bg-neutral text-neutral-content  px-7 p-4 mt-auto">
-      <aside className="grid-flow-col items-center">
-         <PiLinktreeLogo className="text-2xl" />
-        <p>Copyright © {new Date().getFullYear()} - All right reserved DevTinder</p>
+    <footer className="footer border-t border-[#2e2a27]  flex items-center justify-between bg-neutral text-neutral-content  px-7 p-4 mt-auto">
+      <aside className="flex flex-wrap items-center gap-3">
+        <PiLinktreeLogo className="text-2xl" />
+        <p>Copyright © {new Date().getFullYear()} - All rights reserved VYBE</p>
       </aside>
-      <nav className="grid-flow-col gap-4 md:place-self-center md:justify-self-end">
+      <nav className="grid flex-wrap grid-flow-col  gap-4">
         <a>
           <svg
             xmlns="http://www.w3.org/2000/svg"

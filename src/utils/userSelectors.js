@@ -4,5 +4,5 @@ const selectUserState = (state) => state.user;
 
 export const selectUser = createSelector(
   [selectUserState],
-  (userState) => userState.user
+  (userState) => (userState && "user" in userState ? userState.user : userState)
 );

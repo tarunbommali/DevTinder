@@ -1,47 +1,41 @@
 import React from "react";
 import { useSelector } from "react-redux";
-import { User  } from "lucide-react";
+import { User, Pencil, Eye } from "lucide-react";
 import { selectUser } from "../utils/userSelectors";
 import UserCard from "../components/UserCard";
-import withProfileActions from '../hocs/withProfileActions';
- 
+import withProfileActions from "../hocs/withProfileActions";
+import { Link, Navigate } from "react-router-dom";
+
 const UserCardWithActions = withProfileActions(UserCard);
 
 const Profile = () => {
-  const user = useSelector(selectUser);
+  const userState = useSelector((state) => state.user || {});
+  const user = selectUser({ user: userState });
+  const isAuthChecked = userState.isAuthChecked;
 
-  if (!user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-        <div className="bg-white/80 rounded-2xl shadow-xl p-8 text-center border border-white/20">
-          <User className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-slate-700 mb-2">
-            User Not Found
-          </h2>
-          <p className="text-slate-500">Please check your authentication status.</p>
-        </div>
-      </div>
-    );
+  if (isAuthChecked && !user) {
+    return <Navigate to="/login" replace />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        <div className="bg-white/80 rounded-3xl shadow-2xl border border-white/20 p-8">
+    <div className="min-h-screen bg-[#0B0A0A] text-[#F5EFE6] py-8 px-4 sm:px-6 flex flex-col items-center">
+      <div className="w-full max-w-md space-y-6">
+        {/* Live Card Preview */}
+        <div className="flex justify-center">
           <UserCardWithActions
-            currentDev={user}
+            user={user}
             dragOffset={{ x: 0, y: 0 }}
             rotation={0}
             opacity={1}
             isDragging={false}
-            handleTouchStart={() => {}}
-            handleTouchMove={() => {}}
-            handleTouchEnd={() => {}}
-            isOwnProfile={true} 
+            handleTouchStart={() => { }}
+            handleTouchMove={() => { }}
+            handleTouchEnd={() => { }}
+            isOwnProfile={true}
           />
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

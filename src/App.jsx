@@ -9,6 +9,8 @@ import Feed from "./pages/Feed";
 import Connections from "./pages/Connections";
 import ProfileEdit from "./pages/ProfileEdit";
 import RequestRecived from "./pages/RequestRecived";
+import Chat from "./pages/Chat";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -21,7 +23,9 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/edit" element={<ProfileEdit />} />
             <Route path="/connections" element={<Connections/>} />
+            <Route path="/chat/:targetUserId" element={<Connections />} />
             <Route path="/requests" element={<RequestRecived />} />
+            <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
       </BrowserRouter>
